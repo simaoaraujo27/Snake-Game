@@ -33,14 +33,20 @@ drawButton label selected =
 
 -- | Function that draws the game
 drawGame :: World -> Picture
-drawGame world = pictures $ drawSnake (getSnake world)
+drawGame world = pictures $ drawSnake (getSnake world) ++ drawFood (getFood world)
   where
     getSnake :: World -> Snake
     getSnake World {snake = (a, b) : t} = (a, b) : t
 
+    getFood :: World -> Coordinates
+    getFood World {food = a} = a
+
 drawSnake :: Snake -> [Picture]
 drawSnake [] = []
-drawSnake ((a, b) : t) = (translate a b $ color red $ rectangleSolid 20 20) : drawSnake t
+drawSnake ((a, b) : t) = (translate a b $ color green $ rectangleSolid 20 20) : drawSnake t
+
+drawFood :: Coordinates -> [Picture]
+drawFood (a, b) = [color red $ translate a b $ rectangleSolid 20 20]
 
 -- | Function that draws the Game Over screen
 drawGameOver :: Picture

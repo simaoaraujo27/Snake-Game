@@ -1,10 +1,10 @@
 module Main where
 
 import Draw
+import GHC.Base (undefined)
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import Types
-import GHC.Base (undefined)
 
 -- | Game Display
 gameDisplay :: Display
@@ -16,7 +16,7 @@ backgroundColor = white
 
 -- | Frame-rate
 frameRate :: Int
-frameRate = 60
+frameRate = 8
 
 -- | Initial world
 initialWorld :: World
@@ -37,13 +37,18 @@ drawWorld _ = Blank
 
 -- | A function to handle input events
 handleInput :: Event -> World -> World
+-- Menu and GameOver
 handleInput (EventKey (SpecialKey KeyDown) Down _ _) world@(World {actual = Menu op}) = nextOption world
 handleInput (EventKey (SpecialKey KeyUp) Down _ _) world@(World {actual = Menu op}) = nextOption world
 handleInput (EventKey (SpecialKey KeyEnter) Down _ _) world@(World {actual = Menu Play}) = world {actual = Playing}
 handleInput (EventKey (SpecialKey KeyEnter) Down _ _) world@(World {actual = Menu Exit}) = error "Game Closed"
 handleInput (EventKey (SpecialKey KeySpace) Down _ _) world@(World {actual = GameOver}) = initialWorld
+-- Playing
+handleInput (EventKey (SpecialKey KeyRight) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) = world {direction = East}
+handleInput (EventKey (SpecialKey KeyLeft) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) = world {direction = West}
+handleInput (EventKey (SpecialKey KeyUp) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) = world {direction = North}
+handleInput (EventKey (SpecialKey KeyDown) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) = world {direction = South}
 handleInput _ w = w
-
 
 nextOption :: World -> World
 nextOption world@(World {actual = Menu Play}) = world {actual = Menu Exit}
@@ -51,8 +56,23 @@ nextOption world@(World {actual = Menu Exit}) = world {actual = Menu Play}
 
 -- | A function to update the World
 updateWorld :: Float -> World -> World
-updateWorld = undefined
+updateWorld dt world@World {snake = s, direction = dir} = world {snake = move dir s}
+updateWorld dt w = w
 
+-- | Moves the snake
+move :: Direction -> Snake -> Snake
+move dir [] = []
+move dir snake@(head : tail) =
+  case dir of
+    North -> if snd head >= 300 then moveTo snake (fst head, -300) else moveTo snake (fst head, snd head + 20)
+    South -> if snd head <= (-300) then moveTo snake (fst head, 300) else moveTo snake (fst head, snd head - 20)
+    West -> if fst head <= (-300) then moveTo snake (300, snd head) else moveTo snake (fst head - 20, snd head)
+    East -> if fst head >= 300 then moveTo snake (-300, snd head) else moveTo snake (fst head + 20, snd head)
+  where
+    -- \| Saves the current position in order to move the whole snake
+    moveTo :: Snake -> Coordinates -> Snake
+    moveTo [] _ = []
+    moveTo (p : ps) destination = destination : moveTo ps p
 
 main :: IO ()
 main =
@@ -63,4 +83,4 @@ main =
     initialWorld
     drawWorld
     handleInput
-    (\t w -> w)
+    updateWorld
