@@ -1,9 +1,10 @@
 module Main where
 
+import Colisions
 import Draw
-import GHC.Base (undefined)
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
+import System.Random
 import Types
 
 -- | Game Display
@@ -22,9 +23,9 @@ frameRate = 8
 initialWorld :: World
 initialWorld =
   World
-    { snake = [(0, 0), (20, 0), (40, 0)],
-      food = (30, 30),
-      direction = East,
+    { snake = [(0, 0)],
+      food = (20, 20),
+      direction = West,
       actual = Menu Play
     }
 
@@ -56,7 +57,7 @@ nextOption world@(World {actual = Menu Exit}) = world {actual = Menu Play}
 
 -- | A function to update the World
 updateWorld :: Float -> World -> World
-updateWorld dt world@World {snake = s, direction = dir} = world {snake = move dir s}
+updateWorld dt world@World {snake = s, food = a, direction = dir, actual = Playing} = if appleColision a s then world {snake = move dir (s ++ [((\(x, y) -> (x + 20, y)) (last s))]), food = (100, 100)} else world {snake = move dir s}
 updateWorld dt w = w
 
 -- | Moves the snake

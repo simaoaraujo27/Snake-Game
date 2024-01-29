@@ -27,3 +27,5 @@ data World = World
     direction :: Direction,
     actual :: Actual
   }
+
+type Hitbox = (Coordinates, Coordinates)
