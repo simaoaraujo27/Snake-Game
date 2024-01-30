@@ -17,6 +17,13 @@ appleColision (ax, ay) (x : xs) = colision appleHitbox headHitbox
     appleHitbox = hitbox (ax, ay)
     headHitbox = hitbox x
 
+snakeColision :: Snake -> Bool
+snakeColision [] = False
+snakeColision [x] = False
+snakeColision (x : y : t)
+  | colision (hitbox x) (hitbox y) = True
+  | otherwise = snakeColision (x : t)
+
 -- TODO:
 {-
 create a hitbox function

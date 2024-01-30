@@ -43,12 +43,16 @@ handleInput (EventKey (SpecialKey KeyDown) Down _ _) world@(World {actual = Menu
 handleInput (EventKey (SpecialKey KeyUp) Down _ _) world@(World {actual = Menu op}) = nextOption world
 handleInput (EventKey (SpecialKey KeyEnter) Down _ _) world@(World {actual = Menu Play}) = world {actual = Playing}
 handleInput (EventKey (SpecialKey KeyEnter) Down _ _) world@(World {actual = Menu Exit}) = error "Game Closed"
-handleInput (EventKey (SpecialKey KeySpace) Down _ _) world@(World {actual = GameOver}) = initialWorld
+handleInput (EventKey (SpecialKey KeySpace) Down _ _) world@(World {actual = GameOver}) = initialWorld {actual = Playing}
 -- Playing
-handleInput (EventKey (SpecialKey KeyRight) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) = world {direction = East}
-handleInput (EventKey (SpecialKey KeyLeft) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) = world {direction = West}
-handleInput (EventKey (SpecialKey KeyUp) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) = world {direction = North}
-handleInput (EventKey (SpecialKey KeyDown) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) = world {direction = South}
+handleInput (EventKey (SpecialKey KeyRight) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) =
+  if dir == West then world else world {direction = East}
+handleInput (EventKey (SpecialKey KeyLeft) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) =
+  if dir == East then world else world {direction = West}
+handleInput (EventKey (SpecialKey KeyUp) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) =
+  if dir == South then world else world {direction = North}
+handleInput (EventKey (SpecialKey KeyDown) Down _ _) world@(World {snake = s, food = a, direction = dir, actual = Playing}) =
+  if dir == North then world else world {direction = South}
 handleInput _ w = w
 
 nextOption :: World -> World
@@ -57,7 +61,10 @@ nextOption world@(World {actual = Menu Exit}) = world {actual = Menu Play}
 
 -- | A function to update the World
 updateWorld :: Float -> World -> World
-updateWorld dt world@World {snake = s, food = a, direction = dir, actual = Playing} = if appleColision a s then world {snake = move dir (s ++ [((\(x, y) -> (x + 20, y)) (last s))]), food = (100, 100)} else world {snake = move dir s}
+updateWorld dt world@World {snake = s, food = a, direction = dir, actual = Playing}
+  | snakeColision s = world {actual = GameOver}
+  | appleColision a s = world {snake = move dir (s ++ [((\(x, y) -> (x + 20, y)) (last s))]), food = (100, 100)}
+  | otherwise = world {snake = move dir s}
 updateWorld dt w = w
 
 -- | Moves the snake

@@ -50,4 +50,10 @@ drawFood (a, b) = [color red $ translate a b $ rectangleSolid 20 20]
 
 -- | Function that draws the Game Over screen
 drawGameOver :: Picture
-drawGameOver = pictures [Text "Game Over", Text "Press Space to go back to the main menu"]
+drawGameOver = pictures [dgoTitle, playAgainTitle]
+
+dgoTitle :: Picture
+dgoTitle = color blue $ scale 0.3 0.3 $ translate (-450) 500 $ Text "Game Over!"
+
+playAgainTitle :: Picture
+playAgainTitle = scale 0.2 0.2 $ translate (-750) (-200) $ Text "Press SPACE to play again"
