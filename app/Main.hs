@@ -5,6 +5,7 @@ import Draw
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import System.Random
+import System.Random (mkStdGen)
 import Types
 
 -- | Game Display
@@ -17,7 +18,7 @@ backgroundColor = white
 
 -- | Frame-rate
 frameRate :: Int
-frameRate = 8
+frameRate = 10
 
 -- | Initial world
 initialWorld :: World
@@ -63,9 +64,12 @@ nextOption world@(World {actual = Menu Exit}) = world {actual = Menu Play}
 updateWorld :: Float -> World -> World
 updateWorld dt world@World {snake = s, food = a, direction = dir, actual = Playing}
   | snakeColision s = world {actual = GameOver}
-  | appleColision a s = world {snake = move dir (s ++ [((\(x, y) -> (x + 20, y)) (last s))]), food = (100, 100)}
+  | appleColision a s = world {snake = move dir (s ++ [((\(x, y) -> (x + 20, y)) (last s))]), food = newFood world}
   | otherwise = world {snake = move dir s}
 updateWorld dt w = w
+
+newFood :: World -> Coordinates
+newFood world@World {snake = s, food = a, direction = dir, actual = Playing} = (((!!) (filter (\x -> round x `mod` 20 == 0) (randomRs (-280, 280) (mkStdGen 1))) (length s)), ((!!) (filter (\x -> round x `mod` 20 == 0) (randomRs (-280, 280) (mkStdGen 1))) (length s)))
 
 -- | Moves the snake
 move :: Direction -> Snake -> Snake
